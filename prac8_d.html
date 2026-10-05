@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login Form</title>
+</head>
+
+<body>
+
+    <h2>Login Form</h2>
+
+    <form onsubmit="return validateForm()">
+
+        Username:
+        <input type="text" id="username">
+        <br><br>
+
+        Password:
+        <input type="password" id="password">
+        <br><br>
+
+        Mobile Number:
+        <input type="text" id="mobile">
+        <br><br>
+
+        <input type="submit" value="Login">
+
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        function validateForm() {
+
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let mobile = document.getElementById("mobile").value;
+
+            // Check blank fields
+            if (username == "" || password == "" || mobile == "") {
+                alert("All fields should not be blank");
+                return false;
+            }
+
+            // Password length
+            if (password.length < 6 || password.length > 12) {
+                alert("Password must be 6 to 12 characters");
+                return false;
+            }
+
+            // Username validation
+            if (username[0] == '_' || username[0] == '@' ||
+                (username[0] >= '0' && username[0] <= '9')) {
+                alert("Username should not start with _, @ or number");
+                return false;
+            }
+
+            // Mobile number validation
+            if (!/^[789][0-9]{9}$/.test(mobile)) {
+                alert("Mobile number must be 10 digits and start with 7, 8 or 9");
+                return false;
+            }
+
+            alert("Login successful");
+            return true;
+        }
+    </script>
+
+</body>
+
+</html>

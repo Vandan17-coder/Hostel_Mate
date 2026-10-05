@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Maximum Number</title>
+</head>
+
+<body>
+
+    <h2>Find Maximum Number Using Array</h2>
+
+    <script>
+        let numbers = [10, 25, 5, 40, 15];
+
+        let max = numbers[0];
+
+        for (let i = 1; i < numbers.length; i++) {
+            if (numbers[i] > max) {
+                max = numbers[i];
+            }
+        }
+
+        document.write("<span style='font-size: 24px;'>Array: " + numbers + "</span><br>");
+        document.write("<span style='font-size: 24px;'>Maximum number is: " + max + "</span>");
+    </script>
+
+</body>
+
+</html>

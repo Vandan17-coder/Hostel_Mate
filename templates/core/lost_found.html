@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Lost & Found - HostelMate{% endblock %}
+{% block page_title %}Hostel Lost & Found Portal{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+  <!-- Filter Pills -->
+  <div class="filter-bar" style="margin-bottom: 0;">
+    <a href="{% url 'lost_found' %}" class="filter-pill {% if not type_filter and not status_filter %}active{% endif %}">All Items</a>
+    <a href="?type=lost" class="filter-pill {% if type_filter == 'lost' %}active{% endif %}">🔴 Lost Items</a>
+    <a href="?type=found" class="filter-pill {% if type_filter == 'found' %}active{% endif %}">🟢 Found Items</a>
+    <a href="?status=open" class="filter-pill {% if status_filter == 'open' %}active{% endif %}">🔍 Searching / Unclaimed</a>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <!-- Search Form -->
+    <form method="GET" action="{% url 'lost_found' %}" style="display: flex; gap: 0.5rem;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search lost items..." class="form-control" style="width: 220px; padding: 0.5rem 0.8rem;">
+      <button type="submit" class="btn-custom btn-outline-custom"><i class="bi bi-search"></i></button>
+    </form>
+
+    <button onclick="openModal('addLostFoundModal')" class="btn-custom btn-primary-custom">
+      <i class="bi bi-plus-lg"></i> Report Lost/Found
+    </button>
+  </div>
+</div>
+
+<!-- Grid List -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+  {% for item in items %}
+  <div class="hostel-card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid {% if item.item_type == 'lost' %}#ef4444{% else %}#10b981{% endif %};">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: white; background: {% if item.item_type == 'lost' %}#ef4444{% else %}#10b981{% endif %}; padding: 0.2rem 0.6rem; border-radius: 12px;">
+          {{ item.get_item_type_display }}
+        </span>
+
+        {% if item.status == 'open' %}
+        <span class="badge-status badge-pending">Searching / Open</span>
+        {% else %}
+        <span class="badge-status badge-resolved">Claimed / Resolved</span>
+        {% endif %}
+      </div>
+
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
+        {{ item.title }}
+      </h3>
+
+      <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        <i class="bi bi-geo-alt-fill" style="color: var(--primary);"></i> Location: <strong>{{ item.location }}</strong> • Date: {{ item.date_event|date:"M d, Y" }}
+      </div>
+
+      <p style="font-size: 0.9rem; color: #334155; line-height: 1.5; margin-bottom: 1rem;">
+        {{ item.description }}
+      </p>
+    </div>
+
+    <div>
+      <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.82rem; margin-bottom: 1rem;">
+        <div><strong>Reported By:</strong> {{ item.reported_by.get_full_name|default:item.reported_by.username }}</div>
+        <div><strong>Contact:</strong> <span style="color: var(--primary); font-weight: 700;">{{ item.contact_info }}</span></div>
+      </div>
+
+      {% if item.reported_by == user or profile.is_admin %}
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <a href="{% url 'lost_found_toggle_status' item.id %}" class="btn-custom btn-outline-custom" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+          {% if item.status == 'open' %}Mark Claimed{% else %}Mark Open{% endif %}
+        </a>
+        <a href="{% url 'lost_found_delete' item.id %}" onclick="return confirm('Delete this lost/found entry?');" class="btn-custom btn-danger-custom" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+          <i class="bi bi-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="hostel-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;">
+    <i class="bi bi-search-heart" style="font-size: 2.5rem; opacity: 0.3;"></i>
+    <p style="margin-top: 1rem;">No lost & found items match your criteria.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: Report Lost / Found Item -->
+<div id="addLostFoundModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700;">Report Lost or Found Item</h3>
+      <button onclick="closeModal('addLostFoundModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'lost_found_create' %}">
+      {% csrf_token %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Report Type *</label>
+          {{ form.item_type }}
+        </div>
+        <div class="form-group">
+          <label>Category (e.g. Keys, Wallet, Tech)</label>
+          {{ form.category }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Item Name / Brief Title *</label>
+        {{ form.title }}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Location Lost / Found *</label>
+          {{ form.location }}
+        </div>
+        <div class="form-group">
+          <label>Date of Event *</label>
+          {{ form.date_event }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Contact Phone / WhatsApp *</label>
+        {{ form.contact_info }}
+      </div>
+
+      <div class="form-group">
+        <label>Description & Identification Marks *</label>
+        {{ form.description }}
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" onclick="closeModal('addLostFoundModal')" class="btn-custom btn-outline-custom">Cancel</button>
+        <button type="submit" class="btn-custom btn-primary-custom">Submit Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - HostelMate{% endblock %}
+{% block page_title %}Profile & Room Details{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <div class="hostel-card" style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+      <div class="user-avatar" style="width: 72px; height: 72px; font-size: 2rem;">
+        {{ user.username|slice:":1"|upper }}
+      </div>
+      <div>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">
+          {{ user.get_full_name|default:user.username }}
+        </h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.3rem;">
+          <span class="user-role-badge" style="background: var(--primary); color: white; padding: 0.2rem 0.6rem;">
+            {{ profile.get_role_display }}
+          </span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">@{{ user.username }} • Joined {{ user.date_joined|date:"M Y" }}</span>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" action="{% url 'profile' %}">
+      {% csrf_token %}
+      
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">
+        <i class="bi bi-person-badge"></i> Personal & Academic Info
+      </h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" value="{{ user.email }}" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Roll Number</label>
+          {{ form.roll_number }}
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">
+        <i class="bi bi-building"></i> Hostel & Room Allocation
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Hostel Block</label>
+          {{ form.hostel_block }}
+        </div>
+        <div class="form-group">
+          <label>Room Number</label>
+          {{ form.room_number }}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Phone Number</label>
+          {{ form.phone }}
+        </div>
+        <div class="form-group">
+          <label>Emergency Contact</label>
+          {{ form.emergency_contact }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Bio / Additional Notes</label>
+        {{ form.bio }}
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+        <button type="submit" class="btn-custom btn-primary-custom" style="padding: 0.75rem 1.75rem; font-size: 1rem;">
+          <i class="bi bi-save"></i> Save Profile Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

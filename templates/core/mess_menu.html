@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block title %}Mess Menu & Reviews - HostelMate{% endblock %}
+{% block page_title %}Weekly Mess Schedule & Feedback{% endblock %}
+
+{% block content %}
+<!-- Top Stats & Controls Header -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <div style="background: white; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+      <i class="bi bi-star-fill" style="color: var(--accent); font-size: 1.4rem;"></i>
+      <div>
+        <div style="font-size: 1.2rem; font-weight: 800; line-height: 1;">{{ avg_rating }} / 5</div>
+        <small style="color: var(--text-muted); font-size: 0.75rem;">Avg Mess Rating</small>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <button onclick="openModal('addReviewModal')" class="btn-custom btn-primary-custom">
+      <i class="bi bi-pencil-square"></i> Give Mess Review
+    </button>
+    {% if profile.is_admin %}
+    <button onclick="openModal('editMenuModal')" class="btn-custom btn-outline-custom">
+      <i class="bi bi-gear-fill"></i> Update Mess Menu
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Day Selector Tabs -->
+<div class="filter-bar" style="margin-bottom: 1.5rem;">
+  {% for d in days %}
+  <a href="?day={{ d }}" class="filter-pill {% if active_day == d %}active{% endif %}">
+    {{ d }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Active Day's Mess Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+  {% for m in menus %}
+  <div class="hostel-card" style="border-top: 4px solid var(--primary);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">
+        {% if m.meal_type == 'breakfast' %}🍳 Breakfast
+        {% elif m.meal_type == 'lunch' %}🍛 Lunch
+        {% elif m.meal_type == 'snacks' %}☕ Evening Snacks
+        {% else %}🌙 Dinner{% endif %}
+      </h3>
+      <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ m.timing }}</span>
+    </div>
+
+    <div style="font-size: 0.95rem; color: #334155; line-height: 1.6; min-height: 70px;">
+      {{ m.items }}
+    </div>
+  </div>
+  {% empty %}
+  <div class="hostel-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;">
+    <i class="bi bi-egg-fried" style="font-size: 2.5rem; opacity: 0.3;"></i>
+    <p style="margin-top: 1rem;">No mess menu items entered for {{ active_day }} yet.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Mess Student Feedback & Reviews List -->
+<div class="hostel-card">
+  <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+    <i class="bi bi-chat-left-quote-fill" style="color: var(--primary);"></i> Recent Student Reviews & Ratings
+  </h3>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+    {% for r in reviews %}
+    <div style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <div style="font-weight: 700; font-size: 0.95rem;">
+          {{ r.student.get_full_name|default:r.student.username }}
+        </div>
+        <div style="color: var(--accent); font-weight: 800;">
+          {% for i in "12345"|make_list %}
+            {% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}
+          {% endfor %}
+          <span style="color: var(--text-main); font-size: 0.85rem; margin-left: 0.2rem;">({{ r.rating }}/5)</span>
+        </div>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+        Meal: <strong style="text-transform: capitalize;">{{ r.get_meal_type_display }}</strong> • {{ r.created_at|date:"M d, Y" }}
+      </div>
+      <p style="font-size: 0.9rem; color: #334155; line-height: 1.5;">"{{ r.comments }}"</p>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">
+      No student mess reviews submitted yet. Be the first to submit feedback!
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal: Student Submit Review -->
+<div id="addReviewModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700;">Submit Mess Feedback</h3>
+      <button onclick="closeModal('addReviewModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'mess_review_create' %}">
+      {% csrf_token %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Rating (1 to 5 Stars)</label>
+          {{ review_form.rating }}
+        </div>
+        <div class="form-group">
+          <label>Meal Category</label>
+          {{ review_form.meal_type }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Your Feedback / Review Comments</label>
+        {{ review_form.comments }}
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" onclick="closeModal('addReviewModal')" class="btn-custom btn-outline-custom">Cancel</button>
+        <button type="submit" class="btn-custom btn-primary-custom">Submit Feedback</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Admin Update Mess Menu -->
+{% if profile.is_admin %}
+<div id="editMenuModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700;">Update Mess Menu</h3>
+      <button onclick="closeModal('editMenuModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'mess_menu_update' %}">
+      {% csrf_token %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Day of Week</label>
+          {{ menu_form.day }}
+        </div>
+        <div class="form-group">
+          <label>Meal Type</label>
+          {{ menu_form.meal_type }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Timing (e.g. 7:30 AM - 9:30 AM)</label>
+        {{ menu_form.timing }}
+      </div>
+
+      <div class="form-group">
+        <label>Menu Items (comma separated)</label>
+        {{ menu_form.items }}
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" onclick="closeModal('editMenuModal')" class="btn-custom btn-outline-custom">Cancel</button>
+        <button type="submit" class="btn-custom btn-primary-custom">Save Menu Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

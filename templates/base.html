@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HostelMate - Integrated Student Hostel Assistance{% endblock %}</title>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  {% if user.is_authenticated %}
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <div class="brand-icon">
+          <i class="bi bi-building"></i>
+        </div>
+        <div>
+          <div class="brand-title">HostelMate</div>
+          <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">Hostel Mgmt System</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'announcements' %}" class="nav-link-item {% if request.resolver_match.url_name == 'announcements' %}active{% endif %}">
+          <i class="bi bi-megaphone-fill"></i>
+          <span>Announcements</span>
+        </a>
+
+        <a href="{% url 'complaints' %}" class="nav-link-item {% if 'complaint' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>Complaints & Tickets</span>
+        </a>
+
+        <a href="{% url 'mess_menu' %}" class="nav-link-item {% if request.resolver_match.url_name == 'mess_menu' %}active{% endif %}">
+          <i class="bi bi-egg-fried"></i>
+          <span>Mess & Feedback</span>
+        </a>
+
+        <a href="{% url 'resources' %}" class="nav-link-item {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
+          <i class="bi bi-book-fill"></i>
+          <span>Resource Sharing</span>
+        </a>
+
+        <a href="{% url 'lost_found' %}" class="nav-link-item {% if request.resolver_match.url_name == 'lost_found' %}active{% endif %}">
+          <i class="bi bi-search-heart"></i>
+          <span>Lost & Found</span>
+        </a>
+
+        {% if profile.is_admin %}
+        <div style="margin-top: 1rem; margin-bottom: 0.4rem; padding-left: 0.5rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b;">
+          Admin Control
+        </div>
+        <a href="{% url 'admin_students' %}" class="nav-link-item {% if 'admin_student' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="bi bi-people-fill"></i>
+          <span>Students & Rooms</span>
+        </a>
+        <a href="/admin/" target="_blank" class="nav-link-item">
+          <i class="bi bi-shield-lock-fill"></i>
+          <span>Django Admin Panel</span>
+        </a>
+        {% endif %}
+      </nav>
+
+      <!-- Sidebar Bottom User Section -->
+      <div class="sidebar-user">
+        <a href="{% url 'profile' %}" class="user-info" title="View Profile">
+          <div class="user-avatar">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+          <div class="user-details">
+            <h5>{{ user.get_full_name|default:user.username }}</h5>
+            <span class="user-role-badge">{{ profile.get_role_display }}</span>
+          </div>
+        </a>
+        <a href="{% url 'logout' %}" style="color: #94a3b8; font-size: 1.2rem; padding: 0.3rem;" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Body Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="page-header-title">
+          <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+        </div>
+        <div class="topbar-actions">
+          <a href="{% url 'profile' %}" class="btn-custom btn-outline-custom">
+            <i class="bi bi-person-circle"></i>
+            <span>My Profile</span>
+          </a>
+          <a href="{% url 'logout' %}" class="btn-custom btn-danger-custom" style="padding: 0.5rem 0.9rem;">
+            <i class="bi bi-power"></i>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="content-body">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% else %}
+    <!-- Public / Auth Pages Content -->
+    {% block auth_content %}{% endblock %}
+  {% endif %}
+
+  <!-- Global Toast Notification Messages -->
+  {% if messages %}
+  <div class="toast-messages">
+    {% for message in messages %}
+    <div class="toast-item {{ message.tags }}">
+      {% if message.tags == 'success' %}
+        <i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 1.2rem;"></i>
+      {% elif message.tags == 'error' %}
+        <i class="bi bi-x-circle-fill" style="color: #ef4444; font-size: 1.2rem;"></i>
+      {% else %}
+        <i class="bi bi-info-circle-fill" style="color: #3b82f6; font-size: 1.2rem;"></i>
+      {% endif %}
+      <div>{{ message }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Main JavaScript -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Login - HostelMate{% endblock %}
+
+{% block auth_content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 56px; height: 56px; font-size: 1.8rem;">
+        <i class="bi bi-building"></i>
+      </div>
+      <h1 class="auth-title">HostelMate</h1>
+      <p class="auth-subtitle">Student Hostel Assistance & Service Portal</p>
+    </div>
+
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_username">Username / Roll Number</label>
+        <input type="text" name="username" id="id_username" class="form-control" required placeholder="Enter username (e.g. student1)">
+      </div>
+
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        <input type="password" name="password" id="id_password" class="form-control" required placeholder="Enter password">
+      </div>
+
+      <button type="submit" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; padding: 0.8rem; font-size: 1rem; margin-top: 0.5rem;">
+        <i class="bi bi-box-arrow-in-right"></i> Sign In
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+      Don't have an account? <a href="{% url 'register' %}" style="color: var(--primary); font-weight: 700;">Register Here</a>
+    </div>
+
+    <div style="margin-top: 1.5rem; padding: 0.8rem; background: #f8fafc; border-radius: var(--radius-sm); font-size: 0.8rem; color: #64748b; border: 1px solid var(--border-color);">
+      <strong>Demo Accounts (after running seed script):</strong><br>
+      • Admin / Warden: username: <code>admin</code> | pass: <code>admin123</code><br>
+      • Student: username: <code>student1</code> | pass: <code>student123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}

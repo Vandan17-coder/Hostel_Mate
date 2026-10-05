@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JavaScript Events</title>
+</head>
+
+<body>
+
+    <h2 id="heading" onmouseover="this.style.color='red'" onmouseout="this.style.color='black'">
+        Move Mouse Over This Heading
+    </h2>
+
+    <p>Press any key on the keyboard.</p>
+
+    <script>
+        document.onkeydown = function (event) {
+            let key = event.key.toLowerCase();
+
+            if (key == 'a' || key == 'e' || key == 'i' ||
+                key == 'o' || key == 'u') {
+                alert("Vowel is pressed");
+            }
+        };
+    </script>
+
+</body>
+
+</html>
