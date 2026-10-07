@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Register Account - HostelMate{% endblock %}
+
+{% block auth_content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width: 540px;">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Join HostelMate to access mess menus, complaints, & resources</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Username *</label>
+          {{ form.username }}
+          {% if form.username.errors %}<small style="color: red;">{{ form.username.errors[0] }}</small>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Account Role *</label>
+          {{ form.role }}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>First Name</label>
+          {{ form.first_name }}
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        {{ form.email }}
+        {% if form.email.errors %}<small style="color: red;">{{ form.email.errors[0] }}</small>{% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label>Roll Number</label>
+          {{ form.roll_number }}
+        </div>
+        <div class="form-group">
+          <label>Room Number</label>
+          {{ form.room_number }}
+        </div>
+        <div class="form-group">
+          <label>Hostel Block</label>
+          {{ form.hostel_block }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        {{ form.phone }}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Password *</label>
+          {{ form.password }}
+          {% if form.password.errors %}<small style="color: red;">{{ form.password.errors[0] }}</small>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Confirm Password *</label>
+          {{ form.confirm_password }}
+          {% if form.confirm_password.errors %}<small style="color: red;">{{ form.confirm_password.errors[0] }}</small>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; padding: 0.8rem; font-size: 1rem;">
+        <i class="bi bi-person-plus-fill"></i> Complete Registration
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+      Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--primary); font-weight: 700;">Sign In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

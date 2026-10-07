@@ -1,8 +1,17 @@
-# Python
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -16,31 +25,27 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual Environment
+# Virtual Environments
 venv/
-.venv/
 env/
 ENV/
 env.bak/
 venv.bak/
 
-# Django
-local_settings.py
-*.log
-staticfiles/
+# SQLite & Databases
 *.sqlite3
+*.db
+*.sqlite
+instance/
 
-# Environment variables
-.env
-.venv
-
-# IDE / Editor
-.vscode/
+# Flask & IDE
+.flaskenv
 .idea/
+.vscode/
 *.swp
-*.swo
-.DS_Store

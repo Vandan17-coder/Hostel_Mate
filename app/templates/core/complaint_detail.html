@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Ticket #{{ complaint.id }} - HostelMate{% endblock %}
+{% block page_title %}Complaint Ticket #{{ complaint.id }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('complaints.complaints_list') }}" class="btn-custom btn-outline-custom" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+      ← Back to Complaints
+    </a>
+  </div>
+
+  <div class="hostel-card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <span class="badge-status badge-{{ complaint.status }}" style="font-size: 0.85rem;">
+            {{ complaint.get_status_display() }}
+          </span>
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+            Category: {{ complaint.get_category_display() }}
+          </span>
+        </div>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">
+          {{ complaint.title }}
+        </h2>
+      </div>
+
+      <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted);">
+        <div>Priority: <strong style="text-transform: uppercase; color: {% if complaint.priority == 'high' %}red{% else %}orange{% endif %};">{{ complaint.get_priority_display() }}</strong></div>
+        <div style="margin-top: 0.2rem;">Submitted: {{ complaint.created_at|date("M d, Y • h:i A") }}</div>
+      </div>
+    </div>
+
+    <!-- Student Info & Room Box -->
+    <div style="background: #f8fafc; padding: 1rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Reported By</div>
+        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem;">
+          {{ complaint.student.get_full_name() }} (@{{ complaint.student.username }})
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Location</div>
+        <div style="font-size: 1rem; font-weight: 700; color: var(--primary); margin-top: 0.2rem;">
+          Room {{ complaint.room_number }} ({{ complaint.hostel_block }})
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue Description -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem;">Issue Description</h3>
+      <p style="font-size: 1rem; color: #334155; line-height: 1.7; white-space: pre-line; background: #fff; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        {{ complaint.description }}
+      </p>
+    </div>
+
+    <!-- Warden / Admin Action & Official Remarks -->
+    <div style="border-top: 2px solid var(--border-color); padding-top: 1.5rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary);">
+        <i class="bi bi-shield-check"></i> Warden Resolution & Official Remarks
+      </h3>
+
+      {% if complaint.admin_remarks %}
+      <div style="background: #eef2ff; border-left: 4px solid var(--primary); padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary); margin-bottom: 0.3rem;">Warden / Maintenance Response:</div>
+        <p style="font-size: 0.95rem; color: #1e1b4b; line-height: 1.5; white-space: pre-line;">{{ complaint.admin_remarks }}</p>
+        <div style="font-size: 0.75rem; color: #6366f1; margin-top: 0.5rem;">Last Updated: {{ complaint.updated_at|date("M d, Y • h:i A") }}</div>
+      </div>
+      {% else %}
+      <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; margin-bottom: 1.5rem;">
+        No official remarks recorded yet.
+      </p>
+      {% endif %}
+
+      <!-- Admin Update Status Form -->
+      {% if profile and profile.is_admin() %}
+      <div style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem;">Update Ticket Status & Add Response</h4>
+        
+        <form method="POST" action="{{ url_for('complaints.complaint_update_status', pk=complaint.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div style="display: grid; grid-template-columns: 200px 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Select Status</label>
+              <select name="status" class="form-select">
+                <option value="pending" {% if complaint.status == 'pending' %}selected{% endif %}>⏳ Pending</option>
+                <option value="in_progress" {% if complaint.status == 'in_progress' %}selected{% endif %}>🔄 In Progress</option>
+                <option value="resolved" {% if complaint.status == 'resolved' %}selected{% endif %}>✅ Resolved</option>
+                <option value="rejected" {% if complaint.status == 'rejected' %}selected{% endif %}>❌ Rejected</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Official Resolution Remarks / Action Plan</label>
+              <textarea name="admin_remarks" rows="3" class="form-control" placeholder="e.g. Electrician assigned, work scheduled for tomorrow 10 AM.">{{ complaint.admin_remarks or '' }}</textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn-custom btn-primary-custom">
+              <i class="bi bi-check2-circle"></i> Save Ticket Update
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

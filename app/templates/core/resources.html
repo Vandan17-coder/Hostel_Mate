@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Resource Sharing - HostelMate{% endblock %}
+{% block page_title %}Student Resource & Book Sharing{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+  <!-- Category Filter Pills -->
+  <div class="filter-bar" style="margin-bottom: 0;">
+    <a href="{{ url_for('resources.resources_list') }}" class="filter-pill {% if not category_filter %}active{% endif %}">All Items</a>
+    <a href="?category=book" class="filter-pill {% if category_filter == 'book' %}active{% endif %}">📚 Books & Notes</a>
+    <a href="?category=electronics" class="filter-pill {% if category_filter == 'electronics' %}active{% endif %}">💻 Electronics</a>
+    <a href="?category=sports" class="filter-pill {% if category_filter == 'sports' %}active{% endif %}">⚽ Sports</a>
+    <a href="?category=lab" class="filter-pill {% if category_filter == 'lab' %}active{% endif %}">🔬 Lab Tools</a>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <!-- Search Form -->
+    <form method="GET" action="{{ url_for('resources.resources_list') }}" style="display: flex; gap: 0.5rem;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search resources..." class="form-control" style="width: 220px; padding: 0.5rem 0.8rem;">
+      <button type="submit" class="btn-custom btn-outline-custom"><i class="bi bi-search"></i></button>
+    </form>
+
+    <button onclick="openModal('addResourceModal')" class="btn-custom btn-primary-custom">
+      <i class="bi bi-plus-lg"></i> Share Resource
+    </button>
+  </div>
+</div>
+
+<!-- Resource Cards Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+  {% for res in resources %}
+  <div class="hostel-card" style="display: flex; flex-direction: column; justify-content: space-between; {% if not res.is_available %}opacity: 0.6;{% endif %}">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span class="badge-status badge-in_progress" style="font-size: 0.75rem;">
+          {{ res.get_category_display() }}
+        </span>
+
+        {% if res.is_available %}
+        <span style="font-size: 0.75rem; font-weight: 700; color: #10b981; background: #d1fae5; padding: 0.2rem 0.6rem; border-radius: 12px;">
+          Available
+        </span>
+        {% else %}
+        <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; background: #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 12px;">
+          Borrowed
+        </span>
+        {% endif %}
+      </div>
+
+      <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
+        {{ res.title }}
+      </h3>
+
+      <p style="font-size: 0.9rem; color: #334155; line-height: 1.5; margin-bottom: 1rem;">
+        {{ res.description }}
+      </p>
+    </div>
+
+    <div>
+      <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.82rem; margin-bottom: 1rem;">
+        <div><strong>Shared by:</strong> {{ res.uploader.get_full_name() }}</div>
+        <div><strong>Contact:</strong> <span style="color: var(--primary); font-weight: 700;">{{ res.contact_info }}</span></div>
+        <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.2rem;">Posted {{ res.created_at|date("M d, Y") }}</div>
+      </div>
+
+      {% if res.uploader_id == current_user.id or (profile and profile.is_admin()) %}
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <a href="{{ url_for('resources.resource_toggle_status', pk=res.id) }}" class="btn-custom btn-outline-custom" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+          {% if res.is_available %}Mark Borrowed{% else %}Mark Available{% endif %}
+        </a>
+        <a href="{{ url_for('resources.resource_delete', pk=res.id) }}" onclick="return confirm('Delete this resource listing?');" class="btn-custom btn-danger-custom" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+          <i class="bi bi-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="hostel-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;">
+    <i class="bi bi-book-fill" style="font-size: 2.5rem; opacity: 0.3;"></i>
+    <p style="margin-top: 1rem;">No shared resources found matching your query.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: Share Resource -->
+<div id="addResourceModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.3rem; font-weight: 700;">Share a Resource</h3>
+      <button onclick="closeModal('addResourceModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('resources.resource_create') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="form-group">
+        <label>Item Name / Book Title *</label>
+        {{ form.title }}
+      </div>
+
+      <div class="form-group">
+        <label>Category *</label>
+        {{ form.category }}
+      </div>
+
+      <div class="form-group">
+        <label>Description & Condition *</label>
+        {{ form.description }}
+      </div>
+
+      <div class="form-group">
+        <label>Contact Info (Phone / Room # / WhatsApp) *</label>
+        {{ form.contact_info }}
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" onclick="closeModal('addResourceModal')" class="btn-custom btn-outline-custom">Cancel</button>
+        <button type="submit" class="btn-custom btn-primary-custom">Post Resource</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
